@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHADOW-NET // Terminal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- AUTH SCREEN -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-container">
+                <div class="logo">
+                    <div class="logo-icon">◈</div>
+                    <h1>SHADOW-NET</h1>
+                    <p class="subtitle">// SECURE PEER-TO-PEER NETWORK</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">LOGIN</button>
+                    <button class="tab-btn" data-tab="register">REGISTER</button>
+                </div>
+
+                <div id="login-form" class="auth-form active">
+                    <div class="input-group">
+                        <label>USERNAME</label>
+                        <input type="text" id="login-username" placeholder="Enter username..." autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>PASSWORD</label>
+                        <input type="password" id="login-password" placeholder="Enter password...">
+                    </div>
+                    <button class="btn-primary" onclick="Auth.login()">AUTHENTICATE</button>
+                    <p class="hint">Data stored locally in your device only</p>
+                </div>
+
+                <div id="register-form" class="auth-form">
+                    <div class="input-group">
+                        <label>USERNAME</label>
+                        <input type="text" id="reg-username" placeholder="Choose username..." autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>PASSWORD</label>
+                        <input type="password" id="reg-password" placeholder="Min 8 chars...">
+                    </div>
+                    <div class="input-group">
+                        <label>CONFIRM</label>
+                        <input type="password" id="reg-confirm" placeholder="Repeat password...">
+                    </div>
+                    <button class="btn-primary" onclick="Auth.register()">INITIALIZE</button>
+                    <p class="hint">Keys generated locally. No server storage.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div id="main-screen" class="screen">
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-small">◈</div>
+                    <span>SHADOW-NET</span>
+                </div>
+
+                <div class="user-card" onclick="UI.showProfile()">
+                    <div class="avatar" id="user-avatar"></div>
+                    <div class="user-info">
+                        <div class="username" id="sidebar-username">User</div>
+                        <div class="status" id="sidebar-status">● Online</div>
+                    </div>
+                </div>
+
+                <nav class="nav-menu">
+                    <button class="nav-item active" onclick="UI.switchView('chat')">
+                        <span class="icon">💬</span>
+                        <span>Messages</span>
+                        <span class="badge" id="msg-badge">0</span>
+                    </button>
+                    <button class="nav-item" onclick="UI.switchView('rooms')">
+                        <span class="icon">🌐</span>
+                        <span>Rooms</span>
+                    </button>
+                    <button class="nav-item" onclick="UI.switchView('vault')">
+                        <span class="icon">🔒</span>
+                        <span>Vault</span>
+                    </button>
+                    <button class="nav-item" onclick="UI.switchView('peers')">
+                        <span class="icon">📡</span>
+                        <span>Peers</span>
+                    </button>
+                    <button class="nav-item" onclick="UI.switchView('settings')">
+                        <span class="icon">⚙️</span>
+                        <span>Settings</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button class="btn-ghost" onclick="Auth.logout()">DISCONNECT</button>
+                </div>
+            </aside>
+
+            <!-- CONTENT AREA -->
+            <main class="main-content">
+                <!-- CHAT VIEW -->
+                <div id="view-chat" class="view active">
+                    <div class="view-header">
+                        <h2>DIRECT MESSAGES</h2>
+                        <button class="btn-icon" onclick="UI.showAddPeer()" title="Add Peer">+</button>
+                    </div>
+                    <div class="chat-list" id="chat-list"></div>
+                </div>
+
+                <!-- ROOMS VIEW -->
+                <div id="view-rooms" class="view">
+                    <div class="view-header">
+                        <h2>PUBLIC ROOMS</h2>
+                        <button class="btn-icon" onclick="UI.showCreateRoom()" title="Create Room">+</button>
+                    </div>
+                    <div class="room-list" id="room-list"></div>
+                </div>
+
+                <!-- VAULT VIEW -->
+                <div id="view-vault" class="view">
+                    <div class="view-header">
+                        <h2>SECURE VAULT</h2>
+                        <div class="vault-actions">
+                            <button class="btn-secondary" onclick="Vault.uploadFile()">UPLOAD</button>
+                            <input type="file" id="vault-upload" hidden multiple>
+                        </div>
+                    </div>
+                    <div class="vault-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="vault-count">0</span>
+                            <span class="stat-label">FILES</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value" id="vault-size">0 MB</span>
+                            <span class="stat-label">USED</span>
+                        </div>
+                    </div>
+                    <div class="vault-grid" id="vault-grid"></div>
+                </div>
+
+                <!-- PEERS VIEW -->
+                <div id="view-peers" class="view">
+                    <div class="view-header">
+                        <h2>PEER CONNECTIONS</h2>
+                        <button class="btn-secondary" onclick="UI.showAddPeer()">ADD PEER</button>
+                    </div>
+                    <div class="peers-info">
+                        <div class="info-card">
+                            <h3>YOUR ID</h3>
+                            <div class="peer-id" id="my-peer-id">Generating...</div>
+                            <button class="btn-ghost" onclick="P2P.copyId()">COPY</button>
+                        </div>
+                        <div class="info-card">
+                            <h3>CONNECTION STATUS</h3>
+                            <div class="status-grid" id="connection-status">
+                                <div class="status-item">
+                                    <span class="status-dot" id="signal-status"></span>
+                                    <span>Signaling</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-dot" id="p2p-status"></span>
+                                    <span>P2P Network</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="peers-list" id="peers-list"></div>
+                </div>
+
+                <!-- SETTINGS VIEW -->
+                <div id="view-settings" class="view">
+                    <div class="view-header">
+                        <h2>SYSTEM SETTINGS</h2>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3>Profile</h3>
+                            <div class="form-group">
+                                <label>Bio</label>
+                                <textarea id="setting-bio" placeholder="Enter bio..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <input type="text" id="setting-status" placeholder="What's on your mind?">
+                            </div>
+                            <div class="form-group">
+                                <label>Avatar</label>
+                                <input type="file" id="setting-avatar" accept="image/*">
+                            </div>
+                            <button class="btn-primary" onclick="Settings.saveProfile()">UPDATE PROFILE</button>
+                        </div>
+
+                        <div class="setting-card">
+                            <h3>Security</h3>
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" id="curr-password">
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="new-password">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New</label>
+                                <input type="password" id="confirm-password">
+                            </div>
+                            <button class="btn-primary" onclick="Settings.changePassword()">CHANGE PASSWORD</button>
+                        </div>
+
+                        <div class="setting-card danger">
+                            <h3>Data Management</h3>
+                            <button class="btn-danger" onclick="Settings.exportData()">EXPORT ALL DATA</button>
+                            <button class="btn-danger" onclick="Settings.clearAll()">NUKE LOCAL DATA</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- CHAT PANEL -->
+            <div id="chat-panel" class="chat-panel">
+                <div class="chat-header">
+                    <button class="btn-back" onclick="UI.closeChat()">←</button>
+                    <div class="chat-info">
+                        <div class="chat-avatar" id="chat-avatar"></div>
+                        <div>
+                            <div class="chat-name" id="chat-name">Select Chat</div>
+                            <div class="chat-status" id="chat-status">Offline</div>
+                        </div>
+                    </div>
+                    <button class="btn-icon" onclick="Chat.sendFile()" title="Send File">📎</button>
+                    <input type="file" id="chat-file-input" hidden>
+                </div>
+
+                <div class="messages-container" id="messages"></div>
+
+                <div class="chat-input-area">
+                    <div class="input-toolbar">
+                        <button onclick="Chat.insertEmoji('😀')">😀</button>
+                        <button onclick="Chat.insertEmoji('🔥')">🔥</button>
+                        <button onclick="Chat.insertEmoji('💀')">💀</button>
+                        <button onclick="Chat.insertEmoji('⚡')">⚡</button>
+                    </div>
+                    <div class="input-row">
+                        <textarea id="message-input" placeholder="Type encrypted message..." rows="1"></textarea>
+                        <button class="btn-send" onclick="Chat.sendMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <div id="modal-overlay" class="modal-overlay" onclick="UI.closeModal()"></div>
+
+        <div id="modal-add-peer" class="modal">
+            <h3>CONNECT TO PEER</h3>
+            <div class="form-group">
+                <label>Peer ID</label>
+                <input type="text" id="peer-id-input" placeholder="Paste peer ID...">
+            </div>
+            <div class="form-group">
+                <label>Or Scan QR</label>
+                <div id="qr-reader"></div>
+            </div>
+            <button class="btn-primary" onclick="P2P.connectToPeer()">CONNECT</button>
+        </div>
+
+        <div id="modal-profile" class="modal">
+            <div class="profile-header">
+                <div class="profile-avatar" id="modal-avatar"></div>
+                <h3 id="modal-username">User</h3>
+                <p id="modal-bio">No bio</p>
+            </div>
+            <div class="profile-stats">
+                <div class="stat">
+                    <span id="modal-messages">0</span>
+                    <span>Messages</span>
+                </div>
+                <div class="stat">
+                    <span id="modal-files">0</span>
+                    <span>Files</span>
+                </div>
+                <div class="stat">
+                    <span id="modal-peers">0</span>
+                    <span>Peers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/crypto.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/p2p.js"></script>
+    <script src="js/vault.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
